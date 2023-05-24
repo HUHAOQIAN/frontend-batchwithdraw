@@ -1,20 +1,23 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { withdrawalToSingleAddress } from "../../okx/batch-withdraw-okx";
 
-// 这是一个示例，你应该在这里替换成你的实际批量提现逻辑
-async function processWithdraw(amount: number, api: string, secret: string) {
-  // 在这里调用你的提现逻辑
-  console.log(`提现成功`);
-  // ...
-  return { message: "提现成功" };
-}
-
-export async function POST(request: Request) {
-  const { amount, api, secret } = JSON.parse(await request.text());
-
+export async function POST(request: NextRequest) {
+  const { api, secret, passPhrase, ccy, chain, toAddress, amount } =
+    await request.json();
+  console.log(`api ${api}`);
   try {
-    const result = await processWithdraw(amount, api, secret);
-    return NextResponse.json(result);
-  } catch (error) {
-    return NextResponse.json({ message: `Error: ${error}` }, { status: 500 });
+    const res = await withdrawalToSingleAddress(
+      api,
+      secret,
+      passPhrase,
+      ccy,
+      chain,
+      toAddress,
+      amount
+    );
+    console.log(res);
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message });
   }
 }
